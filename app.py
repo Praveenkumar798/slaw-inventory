@@ -13,9 +13,9 @@ delivery_manager = GoodsInwardManager()
 adjustment_manager = AdjustmentManager()
 
 @app.route('/')
-def health_check():
-    """Simple health check for Render"""
-    return "Slaw Burger Inventory System - Online", 200
+def index():
+    """Load main dashboard"""
+    return dashboard()
 
 @app.route('/api/sync/toast', methods=['POST'])
 def sync_toast():
