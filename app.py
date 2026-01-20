@@ -15,7 +15,47 @@ adjustment_manager = AdjustmentManager()
 @app.route('/')
 def index():
     """Load main dashboard"""
-    return dashboard()
+    try:
+        stock = inventory.get_all_stock()
+        recipes = inventory.get_all_recipes()
+        sorted_stock = sorted(stock, key=lambda x: x['name'])
+
+        inventory_by_category = collections.defaultdict(list)
+        category_order = ["Meat", "Bread", "Produce", "Dairy", "sides", "Sauce", "Drink", "Dessert"]
+        
+        for item in stock:
+            cat = item.get('category', 'Other')
+            qty = item.get('quantity', item.get('current_stock', 0))
+            threshold = item.get('threshold', 0)
+            
+            normalized_item = {
+                'id': item['id'],
+                'name': item['name'],
+                'current_stock': qty,
+                'unit': item['unit'],
+                'low_stock_threshold': threshold,
+                'category': cat,
+                'cost_per_unit': item.get('cost_per_unit', 0)
+            }
+            inventory_by_category[cat].append(normalized_item)
+
+        sorted_inventory = {}
+        for cat in category_order:
+            if cat in inventory_by_category:
+                sorted_inventory[cat] = inventory_by_category[cat]
+        for cat in inventory_by_category:
+            if cat not in sorted_inventory:
+                sorted_inventory[cat] = inventory_by_category[cat]
+
+        return render_template('index.html', 
+                             inventory_by_category=sorted_inventory,
+                             all_ingredients=sorted_stock,
+                             recipes=recipes)
+    except Exception as e:
+        print(f"Error loading dashboard: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return f"Error loading page: {str(e)}", 500
 
 @app.route('/api/sync/toast', methods=['POST'])
 def sync_toast():
