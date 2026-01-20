@@ -3,6 +3,7 @@ Logging utility
 """
 
 from datetime import datetime
+import os
 from .config import LOG_FILE
 
 
@@ -14,8 +15,16 @@ class Logger:
         
         print(log_entry)
         
-        with open(LOG_FILE, 'a') as f:
-            f.write(log_entry + "\n")
+        try:
+            # Ensure log directory exists
+            log_dir = os.path.dirname(LOG_FILE)
+            if not os.path.exists(log_dir):
+                os.makedirs(log_dir)
+            
+            with open(LOG_FILE, 'a') as f:
+                f.write(log_entry + "\n")
+        except Exception as e:
+            print(f"Failed to write log: {e}")
     
     @staticmethod
     def info(message):

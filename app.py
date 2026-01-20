@@ -5,9 +5,14 @@ from src.inventory_adjustment import AdjustmentManager
 import collections
 from datetime import datetime
 from src import toast_api
-from src.database import get_connection
+from src.database import get_connection, init_db
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+# Initialize database on startup
+init_db()
+
 inventory = InventoryManager()
 delivery_manager = GoodsInwardManager()
 adjustment_manager = AdjustmentManager()
@@ -50,12 +55,19 @@ def index():
         return render_template('index.html', 
                              inventory_by_category=sorted_inventory,
                              all_ingredients=sorted_stock,
-                             recipes=recipes)
+                             recipes=recipes or {})
     except Exception as e:
         print(f"Error loading dashboard: {str(e)}")
         import traceback
         traceback.print_exc()
-        return f"Error loading page: {str(e)}", 500
+        # Render template with empty data as fallback
+        try:
+            return render_template('index.html', 
+                                 inventory_by_category={},
+                                 all_ingredients=[],
+                                 recipes={})
+        except:
+            return f"<h1>Slawburger Inventory System</h1><p>Error: {str(e)}</p>", 500
 
 @app.route('/api/sync/toast', methods=['POST'])
 def sync_toast():
