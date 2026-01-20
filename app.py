@@ -12,6 +12,11 @@ inventory = InventoryManager()
 delivery_manager = GoodsInwardManager()
 adjustment_manager = AdjustmentManager()
 
+@app.route('/')
+def health_check():
+    """Simple health check for Render"""
+    return "Slaw Burger Inventory System - Online", 200
+
 @app.route('/api/sync/toast', methods=['POST'])
 def sync_toast():
     """Initial check/preview for sync"""
@@ -53,7 +58,7 @@ def confirm_sync():
         traceback.print_exc()
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/')
+@app.route('/dashboard')
 def dashboard():
     # Get raw stock data
     stock = inventory.get_all_stock()
